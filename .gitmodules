@@ -1,0 +1,6 @@
+[submodule "keycloak-spi-amqp-mfa-events"]
+	path = keycloak-spi-amqp-mfa-events
+	url = git@github.com:mbecker/keycloak-spi-amqp-mfa-events.git
+[submodule "keycloak-gomfasnsevents"]
+	path = keycloak-gomfasnsevents
+	url = git@github.com:mbecker/keycloak-gomfasnsevents.git
