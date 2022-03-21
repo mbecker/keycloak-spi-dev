@@ -16,86 +16,33 @@ services:
       POSTGRES_HOST: postgres
     networks:
       - keycloak
-  rabbitmq:
-    image: bitnami/rabbitmq:latest
-    container_name: "rabbitmq"
+  keycloakx:
+    # image: quay.io/keycloak/keycloak-x:latest
+    build: # "context" and "dockerfile" fields have to be under "build"
+      context: dev
+      dockerfile: .Dockerfile
+      # image: keycloaxdev:v0.1
+      # network: host
+      # image: quay.io/keycloak/keycloak-x:latest
+      # cache_from:
+      #   - quay.io/keycloak/keycloak-x:latest
+    container_name: keycloakx
     environment:
-      RABBITMQ_VHOST: "/"
-      RABBITMQ_USERNAME: keycloak
-      RABBITMQ_PASSWORD: keycloak77
-      RABBITMQ_PLUGINS: rabbitmq_management
-      RABBITMQ_MANAGEMENT_PORT_NUMBER: 15672
-    ports:
-      - 5672:5672
-      - 15672:15672
-    volumes:
-      - ./data/rabbitmq:/bitnami
-    networks:
-      - keycloak
-  mailhog:
-    image: mailhog/mailhog
-    container_name: mailhog
-    networks:
-      - keycloak
-    ports:
-      - 8025:8025
-  keycloak-gosns:
-    image: keycloak-gosns:latest
-    container_name: keycloak-gosns
-    restart: "always"
-    secrets:
-        - source: awssns_env
-          target: /dist/.env
-    networks:
-      - keycloak
-    depends_on:
-      - rabbitmq
-  keycloak:
-    image: quay.io/keycloak/keycloak:latest
-    container_name: keycloak
-    volumes:
-      # Script to deploy module
-      #- ./scripts/deploy-module.cli:/opt/jboss/startup-scripts/00-deploy-module.cli
-      # Script to disable theme caching
-      - ./scripts/disable-theme-cache.cli:/opt/jboss/startup-scripts/01-disable-theme-cache.cli      
-      # Script to add SPI properties to the keycloak standalone.xml file; the properties are used in the SPI extension for configuration
-      - ./keycloak-spi-amqp-mfa-events/scripts/add-config.cli:/opt/jboss/startup-scripts/add-config.cli
-      # Keycloak SPI extensions
-      - ./keycloak-spi-amqp-mfa-events/target/com.mbecker-keycloak-spi-amqp-mfa-events-0.1-SNAPSHOT.jar:/opt/jboss/keycloak/standalone/deployments/com.mbecker-keycloak-spi-amqp-mfa-events-0.1-SNAPSHOT.jar
-      # Keycloak original Themes for development
-      - ./themes/:/opt/jboss/keycloak/themes
-    environment:
-      AMQPMFAEVENTS_CONFIG_IS_SIMULATION: "false"
-      AMQPMFAEVENTS_CONFIG_NOTIFICATION_SHOULD_SEND_ON_STARTUP: "false" # TODO: Add to cli script
-      AMQPMFAEVENTS_CONFIG_NOTIFICATION_CHANNELS: AMQP,EMAIL # TODO: Add to cli script
-      AMQPMFAEVENTS_CONFIG_AMQP_HOST: rabbitmq
-      AMQPMFAEVENTS_CONFIG_AMQP_QUEUE: notification
-      AMQPMFAEVENTS_CONFIG_AMQP_USERNAME: keycloak
-      AMQPMFAEVENTS_CONFIG_AMQP_PASSWORD: keycloak77
-      AMQPMFAEVENTS_CONFIG_SHOULD_SKIP: "true"
-      AMQPMFAEVENTS_CONFIG_AMQP_QUEUE_EVENTS: events
-      AMQPMFAEVENTS_CONFIG_AMQP_QUEUE_EVENTS_ADMIN: eventsadmin
-      KEYCLOAK_LOGLEVEL: INFO
-      DB_VENDOR: POSTGRES
-      DB_ADDR: postgres
-      DB_DATABASE: keycloak
-      DB_USER: keycloak
-      DB_SCHEMA: public
-      DB_PASSWORD: password
-      KEYCLOAK_USER: admin
-      KEYCLOAK_PASSWORD: sack77
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_DB_URL: postgres
+      KC_DB_USERNAME: admin
+      KC_DB_PASSWORD: admin
+      KC_HOSTNAME: 127.0.0.1:8080
+      KC_HTTP_ENABLED: "true"
+      # PROXY_ADDRESS_FORWARDING: "true"
+    #command: start-dev --db=postgres -Dkc.db.url.host=postgres --db-username=keycloak --db-password=password
     ports:
       - 8080:8080
     depends_on:
       - postgres
-      - rabbitmq
-      - mailhog
     networks:
       - keycloak
 networks:
   keycloak:
     driver: bridge
-secrets:
-   awssns_env:
-     file: keycloak-gomfasnsevents/dockercompose.env
-   
