@@ -25,20 +25,29 @@ services:
       dockerfile: .Dockerfile
       cache_from:
         - quay.io/keycloak/keycloak:17.0.0
-      args:
-        KC_DB: postgres
+      # args:
+      #   KC_DB: postgres
     environment:
-      KEYCLOAK_ADMIN: admin
-      KEYCLOAK_ADMIN_PASSWORD: admin
-      KC_DB_URL: jdbc:postgresql://postgres/keycloak
-      KC_DB_USERNAME: keycloak
-      KC_DB_PASSWORD: password
-      KC_HOSTNAME: 127.0.0.1:8080
+      KC_HTTPS_CERTIFICATE_FILE: /etc/x509/https/tls.crt
+      KC_HTTPS_CERTIFICATE_KEY_FILE: /etc/x509/https/tls.key
+      # KEYCLOAK_ADMIN: admin
+      # KEYCLOAK_ADMIN_PASSWORD: admin
+      # KC_DB_URL: jdbc:postgresql://postgres/keycloak
+      # KC_DB_USERNAME: keycloak
+      # KC_DB_PASSWORD: password
+      # KC_HOSTNAME: penguin.linux.test:8080
+      # KC_HOSTNAME_STRICT: 'false'
+      # KC_HTTP_ENABLED: 'true'
       # KC_HTTP_ENABLED: "true"
       # PROXY_ADDRESS_FORWARDING: "true"
-    #command: start-dev --db=postgres -Dkc.db.url.host=postgres --db-username=keycloak --db-password=password
+    # command: start-dev 
+    # --db=postgres -Dkc.db.url.host=postgres --db-username=keycloak --db-password=password
     ports:
       - 8080:8080
+      - 8443:8443
+    volumes:
+      - ./certs/penguin.linux.test+1.pem:/etc/x509/https/tls.crt
+      - ./certs/penguin.linux.test+1-key.pem:/etc/x509/https/tls.key
     depends_on:
       - postgres
     networks:
