@@ -1,0 +1,139 @@
+version: '3.4'
+
+#### DOCS ####
+# https://github.com/eabykov/keycloak-compose/blob/main/docker-compose.yml
+# https://blog.codecentric.de/en/2021/12/keycloak-keycloak-x/
+# https://github.com/keycloak/keycloak/discussions/10229#discussioncomment-2422564
+##############
+
+services:
+  
+  postgres:
+    container_name: keycloak17-db
+    image: postgres:13.2-alpine
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: password
+    volumes:
+    - ./data/postgres17:/var/lib/postgresql/data
+    networks:
+    - keycloak17
+    ports:
+     - "5432:5432"
+
+  keycloak:
+    container_name: keycloak17
+    image: keycloak-dev:17.0.0 #quay.io/keycloak/keycloak:17.0.0
+    build: # "context" and "dockerfile" fields have to be under "build"
+      context: ./dev
+      network: host
+      dockerfile: .Dockerfile
+      cache_from:
+        - quay.io/keycloak/keycloak:17.0.0
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      
+      ## https://www.keycloak.org/server/db
+      ## https://www.keycloak.org/server/all-config#_database
+      KC_DB: postgres
+      KC_DB_URL: "jdbc:postgresql://postgres:5432/keycloak"  # jdbc:postgresql://host:port/database
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: password
+      
+      ## https://www.keycloak.org/server/hostname
+      KC_HOSTNAME: penguin.linux.test # mandatory because we are using the production mode (launch with 'start' and not 'start-dev') better to be as closed as possible to the production
+      # KC_HOSTNAME_ADMIN: localhost
+      # KC_HOSTNAME_STRICT_BACKCHANNEL: true
+      # KC_HTTP_RELATIVE_PATH: "/auth" # mandatory to keep same URL compared to previous versions of KC
+      
+      ## https://www.keycloak.org/server/enabletls
+      ## https://www.keycloak.org/server/all-config#_httptls
+      KC_HTTP_ENABLED: "true"
+      # KC_HOSTNAME_STRICT_HTTPS: "false"
+      KC_HTTPS_PROTOCOLS: "TLSv1.3,TLSv1.2"
+      #KC_HTTPS_CIPER_SUITES: ### TODO
+      KC_HTTPS_CERTIFICATE_FILE: "/etc/x509/https/tls.crt"
+      KC_HTTPS_CERTIFICATE_KEY_FILE: "/etc/x509/https/tls.key"
+      # X509_CA_BUNDLE: /etc/x509/https/rootCA.crt /etc/x509/https/hugrootCA.crt # use space to add multiple root CA if needed 
+          ### DEPRECATED => TODO: use instead --https-trust-store-file=/path/to/file --https.trust-store.password=<value> 
+          
+      ## https://www.keycloak.org/server/all-config#_feature
+      ## https://www.keycloak.org/server/features
+      KC_FEATURES: authorization,account-api,admin-fine-grained-authz,impersonation,scripts,token-exchange,upload-scripts,web-authn,client-policies,ciba,map-storage,par,declarative-user-profile,dynamic-scopes,preview
+      
+      JAVA_TOOL_OPTIONS: -Dsun.security.krb5.debug=true -Dsun.security.spenego.degug=true -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=8790 -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dquarkus-log-max-startup-records=10000
+      JAVA_OPTS: -server -Xms512m -Xmx2048m -XX:MetaspaceSize=96M -XX:MaxMetaspaceSize=256m -Djava.awt.headless=true -Djava.net.preferIPv4Stack=true # JAVA_OPTS_APPEND does not work
+           
+      ## https://www.keycloak.org/server/all-config#_cluster
+      ## https://www.keycloak.org/server/caching
+      ## https://github.com/keycloak/keycloak/issues/10780
+      ## https://github.com/keycloak/keycloak/issues/10875
+      # JGROUPS_DISCOVERY_PROTOCOL: JDBC_PING   ### DEPRECATED : replaced by KC_CACHE_STACK
+      # JGROUPS_DISCOVERY_PROPERTIES: datasource_jndi_name=java:jboss/datasources/KeycloakDS,info_writer_sleep_time=500,remove_old_coords_on_view_change=true,remove_all_data_on_view_change=true  ### DEPRECATED : => TODO: find a solution
+      # CACHE_OWNERS_COUNT: 1  ### DEPRECATED => useless now ?
+      # CACHE_OWNERS_AUTH_SESSIONS_COUNT: 1 ### DEPRECATED => useless now ?
+      KC_CACHE: ispn
+      KC_CACHE_STACK: tcp
+      
+      ## https://www.keycloak.org/server/logging
+      ## https://www.keycloak.org/server/all-config#_logging
+      KC_LOG_LEVEL: INFO     
+      
+      ## https://www.keycloak.org/server/all-config#_metrics
+      KC_METRICS_ENABLED: "true" # https://localhost/auth/metrics
+      # KEYCLOAK_STATISTICS: all ### DEPRECATED: no solution yet
+
+      # DEBUG: true
+      # DEBUG_PORT: "*:8787"
+      
+      # DISABLE UI CACHE
+      # https://github.com/keycloak/keycloak/issues/10863
+      SPI_THEME_CACHE_THEMES: "false"
+      SPI_THEME_CACHE_TEMPLATES: "false"
+      SPI_THEME_STATIC_MAX_AGE: -1
+      
+      KEYCLOAK_IMPORT: /tmp/keycloak/config/realm.json # depends on the line uncommented just below  ### TODO : will be available with KC 17.0.1
+      
+      ## CUSTOM for HUG listener
+      #USER_EVENT_TO_SEND: CREATE,UPDATE,DELETE,LOGIN
+      #KEYCLOAK_SERVICE_URL: http://keycloak-service:10001/
+    ###########################
+    ## WARNING :  --auto-build has to be used for dev purpose, for perf concern (quick start-up) ==> build your own custom image
+    # a) CUSTOM entrypoint to enable realm import : https://github.com/keycloak/keycloak/discussions/10229   ==> Does NOT WORK with a DB: driver is not yet initialized
+    entrypoint: ["/tmp/keycloak/config/docker-compose-entrypoint.sh", "start", "--auto-build"]
+    # b) STANDARD enrtrypoint
+    # entrypoint: ["/opt/keycloak/bin/kc.sh", "start", "--auto-build"]
+    volumes:
+    ###########################
+    # Import test realm
+    - ./scripts:/tmp/keycloak/config
+    - ./export/realm-export.json:/tmp/keycloak/config/realm.json:ro
+    ################
+    # Self-signed certificates to activate HTTPS for tests
+    - ./certs/localhost+3.pem:/etc/x509/https/tls.crt:ro
+    - ./certs/localhost+3-key.pem:/etc/x509/https/tls.key:ro
+    # CA certificates to enable user auth with certificates
+    #- ./certs/ca.crt:/etc/x509/https/rootCA.crt:ro # auto-signed CA cert
+    #- ./certs/hugca.crt:/etc/x509/https/hugrootCA.crt:ro # HUG CA cert
+    ################
+    ports:
+    - "8080:8080" # KC HTTP  : http://localhost:8080/
+    - "443:8443"  # KC HTTPS : https://localhost/ (you must accept also warnings triggered by navigators)
+    - "8787:8787" # KC debug port
+    - "8790:8790" # KC JMX port
+    deploy:
+      replicas: 1
+    depends_on:
+    - postgres
+    networks:
+    - keycloak17
+
+networks:
+  keycloak17:
+
+# volumes:
+#   keycloak17_postgres_data:
+#     external: true # because the volume was clone from keycloak 13 DB (in order to test separately the migration)
+#     # driver: local
