@@ -3,23 +3,56 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"strings"
 
 	"github.com/coreos/go-oidc/v3/oidc"
-	// "github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/template/html"
+	"github.com/mbecker/go-webapp/oidchandler"
 	"golang.org/x/oauth2"
 )
 
 var configURL string = "https://localhost/realms/master"
-var issuerURL string = "https://penguin.linux.test/realms/master"
+var issuerURL string = "https://localhost/realms/master"
+var penguinIssuerURL string = "https://penguin.linux.test/realms/master"
 var clientID string = "my-resource-server"
-var clientSecret string = "YZqYfgdMph4EtP62t5NjUAWhI6qnslzu"
-var redirectURL string = "http://penguin.linux.test:3000/demo/callback"
+var clientSecret string = "CsraCM20RwbcHF8SJmenGA930hgblub8"
+var redirectURL string = "https://localhost:3000/demo/callback"
+var penguinredirectURL string = "http://penguin.linux.test:3000/demo/callback"
 var state string = "somestate"
 
 func main() {
+	// Initialize standard Go html template engine
+	engine := html.New("./views", ".html")
+
+	app := fiber.New(fiber.Config{
+		Views: engine,
+	})
+
+	app.Get("/", func(c *fiber.Ctx) error {
+		// Render index template
+		return c.Render("index", fiber.Map{
+			"Title": "Hello, World!",
+		})
+	})
+
+	oidc := app.Group("/oidc", oidchandler.New(oidchandler.Config{
+		ContextKey: "test",
+	}))
+
+	oidc.Get("/", func(c *fiber.Ctx) error {
+		s := fmt.Sprintf("Hello, OIDC 👋! --- %s ", c.Locals("test"))
+		return c.SendString(s)
+	})
+
+	app.ListenTLS(":3000", "./../../certs/wsl/localhost+2.pem", "./../../certs/wsl/localhost+2-key.pem")
+	// log.Fatal(http.ListenAndServeTLS(":3000", "./../../certs/wsl/localhost+2.pem", "./../../certs/wsl/localhost+2-key.pem", nil))
+}
+
+func test() {
 
 	parentContext := context.Background()
 	ctx := oidc.InsecureIssuerURLContext(parentContext, issuerURL)
@@ -110,7 +143,7 @@ func main() {
 		w.Write(data)
 	})
 
-	log.Fatal(http.ListenAndServeTLS(":3000", "./../../certs/localhost+3.pem", "./../../certs/localhost+3-key.pem", nil))
+	log.Fatal(http.ListenAndServeTLS(":3000", "./../../certs/wsl/localhost+2.pem", "./../../certs/wsl/localhost+2-key.pem", nil))
 
 	// app := fiber.New()
 

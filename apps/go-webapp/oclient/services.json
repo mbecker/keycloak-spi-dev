@@ -1,0 +1,10 @@
+{
+  "keycloak": {
+    "client_id": "my-resource-server",
+    "client_secret": "CsraCM20RwbcHF8SJmenGA930hgblub8",
+    "config_url": "https://localhost/realms/master",
+    "issuer_url": "https://localhost/realms/master",
+    "redirect_url": "CsraCM20RwbcHF8SJmenGA930hgblub8",
+    "refreshed_allow": true
+  }
+}

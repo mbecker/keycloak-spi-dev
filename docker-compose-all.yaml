@@ -43,7 +43,7 @@ services:
       KC_DB_PASSWORD: password
       
       ## https://www.keycloak.org/server/hostname
-      KC_HOSTNAME: penguin.linux.test # mandatory because we are using the production mode (launch with 'start' and not 'start-dev') better to be as closed as possible to the production
+      KC_HOSTNAME: localhost #penguin.linux.test # mandatory because we are using the production mode (launch with 'start' and not 'start-dev') better to be as closed as possible to the production
       # KC_HOSTNAME_ADMIN: localhost
       # KC_HOSTNAME_STRICT_BACKCHANNEL: true
       # KC_HTTP_RELATIVE_PATH: "/auth" # mandatory to keep same URL compared to previous versions of KC
@@ -102,7 +102,7 @@ services:
     ###########################
     ## WARNING :  --auto-build has to be used for dev purpose, for perf concern (quick start-up) ==> build your own custom image
     # a) CUSTOM entrypoint to enable realm import : https://github.com/keycloak/keycloak/discussions/10229   ==> Does NOT WORK with a DB: driver is not yet initialized
-    entrypoint: ["/tmp/keycloak/config/docker-compose-entrypoint.sh", "start", "--auto-build"]
+    entrypoint: ["/tmp/keycloak/config/docker-compose-entrypoint.sh", "start"] # "--auto-build"
     # b) STANDARD enrtrypoint
     # entrypoint: ["/opt/keycloak/bin/kc.sh", "start", "--auto-build"]
     volumes:
@@ -112,8 +112,8 @@ services:
     - ./export/realm-export.json:/tmp/keycloak/config/realm.json:ro
     ################
     # Self-signed certificates to activate HTTPS for tests
-    - ./certs/localhost+3.pem:/etc/x509/https/tls.crt:ro
-    - ./certs/localhost+3-key.pem:/etc/x509/https/tls.key:ro
+    - ./certs/wsl/localhost+2.pem:/etc/x509/https/tls.crt:ro
+    - ./certs/wsl/localhost+2-key.pem:/etc/x509/https/tls.key:ro
     # CA certificates to enable user auth with certificates
     #- ./certs/ca.crt:/etc/x509/https/rootCA.crt:ro # auto-signed CA cert
     #- ./certs/hugca.crt:/etc/x509/https/hugrootCA.crt:ro # HUG CA cert
