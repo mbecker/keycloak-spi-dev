@@ -11,6 +11,7 @@ import (
 	"github.com/coreos/go-oidc/v3/oidc"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/template/html"
+	"github.com/mbecker/go-webapp/oclient"
 	"github.com/mbecker/go-webapp/oidchandler"
 	"golang.org/x/oauth2"
 )
@@ -25,6 +26,10 @@ var penguinredirectURL string = "http://penguin.linux.test:3000/demo/callback"
 var state string = "somestate"
 
 func main() {
+
+	// Initialize oauth client
+	oclient := oclient.InitOclient()
+	
 	// Initialize standard Go html template engine
 	engine := html.New("./views", ".html")
 
