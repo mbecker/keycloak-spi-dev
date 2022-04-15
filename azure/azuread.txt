@@ -1,0 +1,2 @@
+application id = 9b8e1aea-7c2e-4e57-a194-e5b4084a9121
+secret = kog7Q~Da8TB2VWQeCZw-9NbBF_geh0fgBCbF-
