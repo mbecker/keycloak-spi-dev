@@ -43,7 +43,7 @@ services:
       KC_DB_PASSWORD: password
       
       ## https://www.keycloak.org/server/hostname
-      KC_HOSTNAME: localhost #penguin.linux.test # mandatory because we are using the production mode (launch with 'start' and not 'start-dev') better to be as closed as possible to the production
+      KC_HOSTNAME: penguin.linux.test #localhost # mandatory because we are using the production mode (launch with 'start' and not 'start-dev') better to be as closed as possible to the production
       # KC_HOSTNAME_ADMIN: localhost
       # KC_HOSTNAME_STRICT_BACKCHANNEL: true
       # KC_HTTP_RELATIVE_PATH: "/auth" # mandatory to keep same URL compared to previous versions of KC
@@ -61,7 +61,7 @@ services:
           
       ## https://www.keycloak.org/server/all-config#_feature
       ## https://www.keycloak.org/server/features
-      KC_FEATURES: authorization,account-api,admin-fine-grained-authz,impersonation,scripts,token-exchange,upload-scripts,web-authn,client-policies,ciba,map-storage,par,declarative-user-profile,dynamic-scopes,preview
+      # KC_FEATURES: authorization,account-api,admin-fine-grained-authz,impersonation,scripts,token-exchange,upload-scripts,web-authn,client-policies,ciba,map-storage,par,declarative-user-profile,dynamic-scopes,preview
       
       JAVA_TOOL_OPTIONS: -Dsun.security.krb5.debug=true -Dsun.security.spenego.degug=true -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=8790 -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dquarkus-log-max-startup-records=10000
       JAVA_OPTS: -server -Xms512m -Xmx2048m -XX:MetaspaceSize=96M -XX:MaxMetaspaceSize=256m -Djava.awt.headless=true -Djava.net.preferIPv4Stack=true # JAVA_OPTS_APPEND does not work
@@ -94,7 +94,8 @@ services:
       SPI_THEME_CACHE_TEMPLATES: "false"
       SPI_THEME_STATIC_MAX_AGE: -1
       
-      KEYCLOAK_IMPORT: /tmp/keycloak/config/realm.json # depends on the line uncommented just below  ### TODO : will be available with KC 17.0.1
+      ####### KEYCLOAK IMPORT #########
+      # KEYCLOAK_IMPORT: /tmp/keycloak/config/realm.json # depends on the line uncommented just below  ### TODO : will be available with KC 17.0.1
       
       ## CUSTOM for HUG listener
       #USER_EVENT_TO_SEND: CREATE,UPDATE,DELETE,LOGIN
@@ -112,8 +113,8 @@ services:
     - ./export/realm-export.json:/tmp/keycloak/config/realm.json:ro
     ################
     # Self-signed certificates to activate HTTPS for tests
-    - ./certs/wsl/localhost+2.pem:/etc/x509/https/tls.crt:ro
-    - ./certs/wsl/localhost+2-key.pem:/etc/x509/https/tls.key:ro
+    - ./certs/wsl/penguin.linux.test+3.pem:/etc/x509/https/tls.crt:ro
+    - ./certs/wsl/penguin.linux.test+3-key.pem:/etc/x509/https/tls.key:ro
     # CA certificates to enable user auth with certificates
     #- ./certs/ca.crt:/etc/x509/https/rootCA.crt:ro # auto-signed CA cert
     #- ./certs/hugca.crt:/etc/x509/https/hugrootCA.crt:ro # HUG CA cert

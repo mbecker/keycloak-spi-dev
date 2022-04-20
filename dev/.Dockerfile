@@ -1,6 +1,7 @@
 FROM quay.io/keycloak/keycloak:17.0.0 as builder
 
 ENV KC_METRICS_ENABLED=true
+# admin2,account2
 ENV KC_FEATURES=authorization,account-api,admin-fine-grained-authz,impersonation,scripts,token-exchange,upload-scripts,web-authn,client-policies,ciba,map-storage,par,declarative-user-profile,dynamic-scopes,preview
 ENV KC_DB=postgres
 RUN /opt/keycloak/bin/kc.sh build

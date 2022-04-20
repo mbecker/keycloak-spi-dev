@@ -1,0 +1,32 @@
+{
+  "rpt": {
+    "authorization": {
+      "permissions": [
+        {
+          "scopes": [
+            "DELETE",
+            "POST",
+            "GET",
+            "PATCH",
+            "PUT"
+          ],
+          "rsid": "653645ab-2a60-4e4d-9626-be5f492d5d07",
+          "rsname": "org:ruv",
+          "type": ""
+        },
+        {
+          "scopes": [
+            "DELETE",
+            "POST",
+            "GET",
+            "PATCH",
+            "PUT"
+          ],
+          "rsid": "7406d7c9-e57e-4f6c-b323-6b44ba98c3db",
+          "rsname": "org:huk",
+          "type": ""
+        }
+      ]
+    }
+  }
+}
