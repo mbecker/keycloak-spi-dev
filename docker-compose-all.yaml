@@ -7,9 +7,18 @@ version: '3.4'
 ##############
 
 services:
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8081:8080
+    networks:
+    - keycloak17
   
   postgres:
     container_name: keycloak17-db
+    restart: always
     image: postgres:13.2-alpine
     environment:
       POSTGRES_DB: keycloak
@@ -24,6 +33,7 @@ services:
 
   keycloak:
     container_name: keycloak17
+    restart: always
     image: keycloak-dev:17.0.0 #quay.io/keycloak/keycloak:17.0.0
     build: # "context" and "dockerfile" fields have to be under "build"
       context: ./dev
